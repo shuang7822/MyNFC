@@ -24,7 +24,7 @@ import java.util.Locale;
  */
 public class WriteTextActivity extends BaseNfcActivity {
     private TextView TextViewFlt;
-    private String mText = "NFC-NewText-123";
+    private String mText = "NFC-CGS";
     private TextView TextViewNo;
     int i=0;
 
