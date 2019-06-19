@@ -15,7 +15,10 @@ import android.widget.Toast;
 
 import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.BaseNfcActivity;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Author:Created by WuShuang 2018/10/10.
@@ -28,6 +31,7 @@ public class ReadTextActivity extends BaseNfcActivity {
     private TextView TextViewNo;
     private String mTagText;
     private String mText = " ";
+    List<String> CardID = new ArrayList<>();
     int i=0;
 
 
@@ -36,9 +40,9 @@ public class ReadTextActivity extends BaseNfcActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_text);
-        mNfcText = (TextView) findViewById(R.id.tv_nfctext);
-        TextViewNo = (TextView) findViewById(R.id.textViewNo);
-        TextViewFlt= (TextView) findViewById(R.id.textViewFlt);
+        mNfcText = findViewById(R.id.tv_nfctext);
+        TextViewNo = findViewById(R.id.textViewNo);
+        TextViewFlt= findViewById(R.id.textViewFlt);
         Intent intent=getIntent();
         mText=intent.getStringExtra("FltNr");
         TextViewFlt.setText("操作航班为："+mText);
@@ -47,17 +51,29 @@ public class ReadTextActivity extends BaseNfcActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+            byte[] cardid = null;
             //1.获取Tag对象
             Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
-            byte[] aa = detectedTag.getId();
-            mTagText="UID:"+ bytesToHexString(aa)+"\n";//获取卡的UID
+           cardid = detectedTag.getId();
+            mTagText="UID:"+ bytesToHexString(cardid)+"\n";//获取卡的UID
             //2.获取Ndef的实例
             Ndef ndef = Ndef.get(detectedTag);
-            mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
-            readNfcTag(intent);
-            Log.v("ok","disnable2");
-            mNfcText.setText(mTagText);
+          for (String value :CardID)
+              if (value.equals(mTagText)) {
+                  Log.v("ok", "跳过");
+                  Toast.makeText(this, "这张卡已经使用过", Toast.LENGTH_SHORT).show();
+                  break;
+
+              } else {
+                  readNfcTag(intent);
+                  CardID.add(mTagText);
+                  break;
+              }
+        Log.v("ok","disnable2");
+        mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+
+        mNfcText.setText(mTagText);
 
     }
 
