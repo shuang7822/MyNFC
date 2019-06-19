@@ -8,6 +8,7 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,8 @@ import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.BaseNfcActivity;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -26,14 +29,17 @@ public class WriteTextActivity extends BaseNfcActivity {
     private TextView TextViewFlt;
     private String mText = "NFC-CGS";
     private TextView TextViewNo;
+    List<String> CardID = new ArrayList<>();
+    private String cardID;
+
     int i=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write_text);
-        TextViewNo=(TextView) findViewById(R.id.textViewNo);
-        TextViewFlt= (TextView) findViewById(R.id.textViewFlt);
+        TextViewNo= findViewById(R.id.textViewNo);
+        TextViewFlt=  findViewById(R.id.textViewFlt);
         Intent intent=getIntent();
         mText=intent.getStringExtra("FltNr");
         TextViewFlt.setText("操作航班为："+mText);
@@ -43,21 +49,52 @@ public class WriteTextActivity extends BaseNfcActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
+     //   if (mText == null)
+     //      return;
+     //获取Tag对象
+     // Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+     //   NdefMessage ndefMessage = new NdefMessage(
+     //           new NdefRecord[]{createTextRecord(mText)});
+     //   boolean result = writeTag(ndefMessage, detectedTag);
+     //   if (result) {
+     //       i=i+1;
+     //       TextViewNo.setText(String.format("%d", i));
+     //       Toast.makeText(this, "写入成功", Toast.LENGTH_SHORT).show();
+     //    } else {
+     //       Toast.makeText(this, "写入失败", Toast.LENGTH_SHORT).show();
+     //       Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+     //       vibrator.vibrate(1000);
+    //    }
+        //新代码
         if (mText == null)
-            return;
-        //获取Tag对象
+        return;
+        byte[] cardid;
+        //1.获取Tag对象
         Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        NdefMessage ndefMessage = new NdefMessage(
-                new NdefRecord[]{createTextRecord(mText)});
-        boolean result = writeTag(ndefMessage, detectedTag);
-        if (result) {
-            i=i+1;
-            TextViewNo.setText(String.format("%d", i));
-            Toast.makeText(this, "写入成功", Toast.LENGTH_SHORT).show();
-         } else {
-            Toast.makeText(this, "写入失败", Toast.LENGTH_SHORT).show();
-            Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
-            vibrator.vibrate(1000);
+        cardid = detectedTag.getId();
+        cardID=bytesToHexString(cardid);
+        Log.v("ok",cardID);
+          NdefMessage ndefMessage = new NdefMessage(
+                  new NdefRecord[]{createTextRecord(mText)});
+
+        if (CardID.contains(cardID) )
+        {
+            Toast.makeText(this, "这张卡已经发放过", Toast.LENGTH_SHORT).show();
+
+        }
+        else{
+
+            boolean result = writeTag(ndefMessage, detectedTag);
+            if (result) {
+                i=i+1;
+                TextViewNo.setText(String.format("%d", i));
+                Toast.makeText(this, "写入成功", Toast.LENGTH_SHORT).show();
+             } else {
+                Toast.makeText(this, "写入失败", Toast.LENGTH_SHORT).show();
+                Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                vibrator.vibrate(1000);
+             }
+            CardID.add(cardID);
 
         }
     }
@@ -109,4 +146,19 @@ public class WriteTextActivity extends BaseNfcActivity {
         }
         return false;
     }
+    //字符序列转换为16进制字符串
+    private String bytesToHexString(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder("0x");
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        char[] buffer = new char[2];
+        for (int i = 0; i < src.length; i++) {
+            buffer[0] = Character.forDigit((src[i] >>> 4) & 0x0F, 16);
+            buffer[1] = Character.forDigit(src[i] & 0x0F, 16);
+            stringBuilder.append(buffer);
+        }
+        return stringBuilder.toString();
+    }
+
 }
