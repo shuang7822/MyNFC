@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:textColor="@color/colorAccent"
         android:text=" 11"
-        android:textSize="18dp"/>
+        android:textSize="18sp"/>
 
 
     <TextView
@@ -39,7 +39,7 @@
         android:gravity="center"
         android:text="0"
         android:textColor="@color/colorAccent"
-        android:textSize="44sp" />
+        android:textSize="64sp" />
 
 
     <ImageView

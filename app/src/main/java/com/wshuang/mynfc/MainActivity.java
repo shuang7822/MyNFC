@@ -12,6 +12,8 @@ import com.wshuang.mynfc.activity.ReadTextActivity;
 import com.wshuang.mynfc.activity.WriteTextActivity;
 
 import com.wshuang.mynfc.base.BaseNfcActivity;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends BaseNfcActivity {
     private TextView ifo_NFC;
@@ -30,15 +32,16 @@ public class MainActivity extends BaseNfcActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ifo_NFC = (TextView) findViewById(R.id.ifo_NFC);
-        editFltNr = (EditText) findViewById(R.id.editFlt);
-        editFltDate = (EditText) findViewById(R.id.editFltDate);
-        Buttonputout = (Button) findViewById(R.id.buttonPutout);
-        Buttonputin = (Button) findViewById(R.id.buttonPutin);
-
-
-
-
+        ifo_NFC = findViewById(R.id.ifo_NFC);
+        editFltNr =  findViewById(R.id.editFlt);
+        editFltDate =  findViewById(R.id.editFltDate);
+        Buttonputout =  findViewById(R.id.buttonPutout);
+        Buttonputin = findViewById(R.id.buttonPutin);
+        editFltDate.setText("当前日期");
+        Date date=new Date();
+       //第二个mm要大写,不然月份会有错误
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyMMdd");//(“yyy-MM-dd”);
+         editFltDate.setText(sdf.format(date));
         // NFC适配器，所有的关于NFC的操作从该适配器进行
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (!ifNFCUse()) {

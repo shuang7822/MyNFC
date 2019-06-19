@@ -32,6 +32,7 @@ public class ReadTextActivity extends BaseNfcActivity {
     private String mTagText;
     private String mText = " ";
     List<String> CardID = new ArrayList<>();
+    private String cardID;
     int i=0;
 
 
@@ -57,23 +58,33 @@ public class ReadTextActivity extends BaseNfcActivity {
 
            cardid = detectedTag.getId();
             mTagText="UID:"+ bytesToHexString(cardid)+"\n";//获取卡的UID
-            //2.获取Ndef的实例
-            Ndef ndef = Ndef.get(detectedTag);
-          for (String value :CardID)
-              if (value.equals(mTagText)) {
-                  Log.v("ok", "跳过");
-                  Toast.makeText(this, "这张卡已经使用过", Toast.LENGTH_SHORT).show();
-                  break;
+           Log.v("ok",mTagText);
 
-              } else {
-                  readNfcTag(intent);
-                  CardID.add(mTagText);
-                  break;
-              }
-        Log.v("ok","disnable2");
-        mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+            cardID=bytesToHexString(cardid);
+           Log.v("ok",cardID);
+        //2.获取Ndef的实例
+        Ndef ndef = Ndef.get(detectedTag);
+
+        if (CardID.contains(cardID) )
+           {
+               Toast.makeText(this, "这张卡已经收取过", Toast.LENGTH_SHORT).show();
+
+           }
+           else{
+
+               readNfcTag(intent);
+               Log.v("ok","disnable3");
+               mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+
+               mNfcText.setText(mTagText);
+               CardID.add(cardID);
+
+           }
+        mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
         mNfcText.setText(mTagText);
+
+
 
     }
 

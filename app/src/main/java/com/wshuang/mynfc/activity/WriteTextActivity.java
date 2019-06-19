@@ -49,22 +49,6 @@ public class WriteTextActivity extends BaseNfcActivity {
 
     @Override
     public void onNewIntent(Intent intent) {
-     //   if (mText == null)
-     //      return;
-     //获取Tag对象
-     // Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-     //   NdefMessage ndefMessage = new NdefMessage(
-     //           new NdefRecord[]{createTextRecord(mText)});
-     //   boolean result = writeTag(ndefMessage, detectedTag);
-     //   if (result) {
-     //       i=i+1;
-     //       TextViewNo.setText(String.format("%d", i));
-     //       Toast.makeText(this, "写入成功", Toast.LENGTH_SHORT).show();
-     //    } else {
-     //       Toast.makeText(this, "写入失败", Toast.LENGTH_SHORT).show();
-     //       Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
-     //       vibrator.vibrate(1000);
-    //    }
         //新代码
         if (mText == null)
         return;
