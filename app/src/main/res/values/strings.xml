@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">二次复核-演示</string>
+    <string name="app_name">登机无忧</string>
     <string name="fltDate">航班日期</string>
     <string name="fltnr">航班号</string>
     <string name="str_read_text">收 卡</string>
@@ -78,5 +78,5 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
-    <string name="nfcLTD">南航北京地服 - 信息管理办公室    \u00a9 2019</string>
+    <string name="nfcLTD">南航北京地服-信息办 V1.2 \u00a9 2019</string>
 </resources>
