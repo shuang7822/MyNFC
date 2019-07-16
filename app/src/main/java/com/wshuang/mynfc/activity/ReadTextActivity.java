@@ -29,61 +29,64 @@ public class ReadTextActivity extends BaseNfcActivity {
     private TextView TextViewFlt;
     private TextView mNfcText;
     private TextView TextViewNo;
+    private TextView editFltDate;
     private String mTagText;
     private String mText = " ";
     List<String> CardID = new ArrayList<>();
     private String cardID;
-    int i=0;
-
+    int i = 0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_read_text);
-        mNfcText = findViewById(R.id.tv_nfctext);
         TextViewNo = findViewById(R.id.textViewNo);
-        TextViewFlt= findViewById(R.id.textViewFlt);
-        Intent intent=getIntent();
-        mText=intent.getStringExtra("FltNr");
-        TextViewFlt.setText("操作航班为："+mText);
+        TextViewFlt = findViewById(R.id.textViewFlt);
+        editFltDate = findViewById(R.id.editFltDate);
+        Intent intent = getIntent();
+        String  m1Text = intent.getStringExtra("FltData");
+        String  m2Text = intent.getStringExtra("FltNr");
+        // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
+        editFltDate.setText("日   期：" + m1Text);
+
+        TextViewFlt.setText("航班号：" + m2Text);
 
     }
 
     @Override
     public void onNewIntent(Intent intent) {
-            byte[] cardid = null;
-            //1.获取Tag对象
-            Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        byte[] cardid = null;
+        //1.获取Tag对象
+        Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
-           cardid = detectedTag.getId();
-            mTagText="UID:"+ bytesToHexString(cardid)+"\n";//获取卡的UID
-           Log.v("ok",mTagText);
+        cardid = detectedTag.getId();
+        mTagText = "UID:" + bytesToHexString(cardid) + "\n";//获取卡的UID
+        Log.v("ok", mTagText);
 
-            cardID=bytesToHexString(cardid);
-           Log.v("ok",cardID);
+        cardID = bytesToHexString(cardid);
+        Log.v("ok", cardID);
         //2.获取Ndef的实例
         Ndef ndef = Ndef.get(detectedTag);
 
-        if (CardID.contains(cardID) )
-           {
-               Toast.makeText(this, "这张卡已经收取过", Toast.LENGTH_SHORT).show();
+        if (CardID.contains(cardID)) {
+            Toast.makeText(this, "这张卡已经收取过", Toast.LENGTH_SHORT).show();
+            // mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
-           }
-           else{
 
-               readNfcTag(intent);
-               Log.v("ok","disnable3");
-               mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+        } else {
 
-               mNfcText.setText(mTagText);
-               CardID.add(cardID);
+            readNfcTag(intent);
 
-           }
-        mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+            Log.v("ok", "读取成功");
+            //Toast.makeText(this, "读取成功", Toast.LENGTH_SHORT).show();
+
+            // mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+
+            mNfcText.setText(mTagText);
+        }
 
         mNfcText.setText(mTagText);
-
 
 
     }
@@ -103,26 +106,47 @@ public class ReadTextActivity extends BaseNfcActivity {
                     msgs[i] = (NdefMessage) rawMsgs[i];
                     contentSize += msgs[i].toByteArray().length;
                 }
+            } else {
+
+                Toast.makeText(this, "这是张空卡", Toast.LENGTH_SHORT).show();
+                //声明一个振动器对象
+                Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                long pattern[] = {0, 300, 100, 300};
+                vibrator.vibrate(pattern, -1);
+                //vibrator.vibrate(1000);
+
+
             }
             try {
                 if (msgs != null) {
                     NdefRecord record = msgs[0].getRecords()[0];
                     String textRecord = parseTextRecord(record);
-                    mTagText += textRecord + "\n\n字符长度：" + contentSize + " bytes";
-                    if (textRecord.equals(mText))
-                    {
-                        i=i+1;
+                    mTagText += textRecord + "\n字符长度：" + contentSize + " bytes";
+                    if (textRecord.equals(mText)) {
+                        i = i + 1;
                         TextViewNo.setText(String.format("%d", i));
-                    }else
-                    {
+                        CardID.add(cardID);
+                    } else {
                         Toast.makeText(this, "不是本航班的卡", Toast.LENGTH_SHORT).show();
                         //声明一个振动器对象
-                        Vibrator vibrator = (Vibrator)this.getSystemService(this.VIBRATOR_SERVICE);
-                        vibrator.vibrate(1000);
+                        Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                        long pattern[] = {0, 300, 100, 300};
+                        vibrator.vibrate(pattern, -1);
+                        //vibrator.vibrate(1000);
 
                     }
+                } else {
+                    Toast.makeText(this, "消息为空", Toast.LENGTH_SHORT).show();
+                    //声明一个振动器对象
+                    Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                    long pattern[] = {0, 300, 100, 300};
+                    vibrator.vibrate(pattern, -1);
+                    //vibrator.vibrate(1000);
+
                 }
             } catch (Exception e) {
+                Toast.makeText(this, "读取失败，请重试", Toast.LENGTH_SHORT).show();
+
             }
         }
     }
@@ -165,8 +189,9 @@ public class ReadTextActivity extends BaseNfcActivity {
             throw new IllegalArgumentException();
         }
     }
+
     //字符序列转换为16进制字符串
-       private String bytesToHexString(byte[] src) {
+    private String bytesToHexString(byte[] src) {
         StringBuilder stringBuilder = new StringBuilder("0x");
         if (src == null || src.length <= 0) {
             return null;
