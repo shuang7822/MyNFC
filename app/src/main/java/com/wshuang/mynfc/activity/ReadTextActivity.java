@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wshuang.mynfc.R;
+import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
 
 import java.util.ArrayList;
@@ -35,6 +36,10 @@ public class ReadTextActivity extends BaseNfcActivity {
     List<String> CardID = new ArrayList<>();
     private String cardID;
     int i = 0;
+    private String  FltData;
+    private String FltNr;
+    private String Psw="!@c#$G%^s&*";
+
 
 
     @Override
@@ -45,12 +50,13 @@ public class ReadTextActivity extends BaseNfcActivity {
         TextViewFlt = findViewById(R.id.textViewFlt);
         editFltDate = findViewById(R.id.editFltDate);
         Intent intent = getIntent();
-        String  m1Text = intent.getStringExtra("FltData");
-        String  m2Text = intent.getStringExtra("FltNr");
+        FltData = intent.getStringExtra("FltData");
+        FltNr = intent.getStringExtra("FltNr");
         // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
-        editFltDate.setText("日   期：" + m1Text);
+        editFltDate.setText("日   期：" + FltData);
+        TextViewFlt.setText("航班号：" + FltNr);
+        Log.v("ok", "加载成功加载成功加载成功加载成功加载成功加载成功加载成功");
 
-        TextViewFlt.setText("航班号：" + m2Text);
 
     }
 
@@ -80,13 +86,12 @@ public class ReadTextActivity extends BaseNfcActivity {
 
             Log.v("ok", "读取成功");
             //Toast.makeText(this, "读取成功", Toast.LENGTH_SHORT).show();
-
             // mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
-            mNfcText.setText(mTagText);
+           // mNfcText.setText(mTagText);
         }
 
-        mNfcText.setText(mTagText);
+      //  mNfcText.setText(mTagText);
 
 
     }
@@ -121,7 +126,15 @@ public class ReadTextActivity extends BaseNfcActivity {
                 if (msgs != null) {
                     NdefRecord record = msgs[0].getRecords()[0];
                     String textRecord = parseTextRecord(record);
+                    Log.v("ok", "密码对比");
+
+                    Log.v("ok", "原始"+textRecord);
                     mTagText += textRecord + "\n字符长度：" + contentSize + " bytes";
+                    mText=FltData+FltNr;
+                    Log.v("ok", "文本"+mText);
+
+                    mText=AESUtils3.encrypt2(mText,Psw);
+                    Log.v("ok", "对比"+mText);
                     if (textRecord.equals(mText)) {
                         i = i + 1;
                         TextViewNo.setText(String.format("%d", i));
