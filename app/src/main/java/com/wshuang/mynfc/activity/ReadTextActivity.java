@@ -57,9 +57,9 @@ public class ReadTextActivity extends BaseNfcActivity {
         FltData = intent.getStringExtra("FltData");
         FltNr = intent.getStringExtra("FltNr");
         // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
-        editFltDate.setText("日   期：" + FltData);
-        TextViewFlt.setText("航班号：" + FltNr);
-        Log.v("ok", "加载成功加载成功加载成功加载成功加载成功加载成功加载成功");
+        editFltDate.setText("日期：" + FltData);
+        TextViewFlt.setText("航班：" + FltNr+"    ");
+        Log.v("ok", "收卡页面加载成功");
 
 
     }
@@ -80,7 +80,7 @@ public class ReadTextActivity extends BaseNfcActivity {
         Ndef ndef = Ndef.get(detectedTag);
 
         if (CardID.contains(cardID)) {
-            Toast.makeText(this, "这张卡已经收取过", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "这复核牌已经回收过", Toast.LENGTH_SHORT).show();
             Tv_nfcmsg.setText("重收");
             Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
 
@@ -88,6 +88,7 @@ public class ReadTextActivity extends BaseNfcActivity {
 
 
         } else {
+            Log.v("ok", "开始读取");
 
             readNfcTag(intent);
 
@@ -111,6 +112,7 @@ public class ReadTextActivity extends BaseNfcActivity {
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
             NdefMessage msgs[] = null;
+            Log.v("ok", "消息长度："+rawMsgs.toString());
             int contentSize = 0;
             if (rawMsgs != null) {
                 msgs = new NdefMessage[rawMsgs.length];
@@ -120,7 +122,7 @@ public class ReadTextActivity extends BaseNfcActivity {
                 }
             } else {
 
-                Toast.makeText(this, "这是张空卡", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "这是张空复核牌", Toast.LENGTH_SHORT).show();
                 Tv_nfcmsg.setText("空卡");
                 Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
 
@@ -153,8 +155,8 @@ public class ReadTextActivity extends BaseNfcActivity {
 
                         CardID.add(cardID);
                     } else {
-                        Toast.makeText(this, "不是本航班的卡", Toast.LENGTH_SHORT).show();
-                        Tv_nfcmsg.setText("非本航卡");
+                        Toast.makeText(this, "不是本航班的复核牌", Toast.LENGTH_SHORT).show();
+                        Tv_nfcmsg.setText("非本航牌");
                         Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
 
                         //声明一个振动器对象
@@ -166,7 +168,7 @@ public class ReadTextActivity extends BaseNfcActivity {
                     }
                 } else {
                     Toast.makeText(this, "消息为空", Toast.LENGTH_SHORT).show();
-                    Tv_nfcmsg.setText("空卡");
+                    Tv_nfcmsg.setText("错牌");
                     Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
 
                     //声明一个振动器对象
@@ -183,6 +185,19 @@ public class ReadTextActivity extends BaseNfcActivity {
 
 
             }
+        }else{
+            Toast.makeText(this, "不是正确的复核牌", Toast.LENGTH_SHORT).show();
+            Tv_nfcmsg.setText("错牌");
+            Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+            Log.v("ok", "错误的卡");
+
+
+            //声明一个振动器对象
+            Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+            long pattern[] = {0, 300, 100, 300};
+            vibrator.vibrate(pattern, -1);
+            //vibrator.vibrate(1000);
+
         }
     }
 
