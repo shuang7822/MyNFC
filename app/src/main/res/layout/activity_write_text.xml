@@ -10,13 +10,22 @@
     android:background="@color/colorBackground">
 
     <TextView
-        android:id="@+id/textViewFlt"
+        android:id="@+id/editFltDate"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorCsn"
         android:text=" 11"
-        android:textSize="18sp"/>
+        android:textSize="28sp" />
+    <TextView
+        android:id="@+id/textViewFlt"
+        android:gravity="center"
+        android:layout_below="@+id/editFltDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorCsn"
+        android:text=" 11"
+        android:textSize="28sp" />
 
 
     <TextView
@@ -25,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/textViewFlt"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:text="共发卡"
         android:textSize="24sp" />
@@ -39,21 +48,35 @@
         android:gravity="center"
         android:text="0"
         android:textColor="@color/colorAccent"
-        android:textSize="64sp" />
+        android:textSize="84sp" />
 
     <ImageView
-        android:id="@+id/tv_nfctext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/imgtest"
+        android:layout_width="100dp"
+        android:layout_height="80dp"
         android:layout_below="@id/textViewNo"
-        android:src="@drawable/nfc_write"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/nfc_read" />
+
+    <TextView
+        android:id="@+id/tv_nfcmsg"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imgtest"
+        android:text=" "
+
+        android:textSize="45sp"
+        android:layout_marginTop="30dp" />
+
     <TextView
         android:id="@+id/textView5"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="请将NFC标签靠近手机背面"/>
+        android:text="请将二次复核牌靠近手机NFC感应区" />
 
 
 </RelativeLayout>

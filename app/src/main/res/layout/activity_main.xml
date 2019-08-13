@@ -18,6 +18,7 @@
         android:ems="10"
         android:inputType="date"
         android:autofillHints="航班日期" />
+
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
@@ -33,22 +34,23 @@
         android:autofillHints="航班号" />
 
 
-
     <Button
         android:id="@+id/buttonPutin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="收  卡"
-        android:onClick="clickPutin"/>
+        android:text="机下复核"
+        android:textSize="24sp"
+        android:onClick="clickPutin" />
 
     <Button
         android:id="@+id/buttonPutout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="发  卡"
-        android:onClick="clickPutout"/>
+        android:text="登机发牌"
+        android:textSize="24sp"
+        android:onClick="clickPutout" />
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -57,18 +59,20 @@
         android:orientation="vertical">
 
 
-    <TextView
-        android:id="@+id/ifo_NFC"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="bottom"
-        android:text="@string/nfcMessage"
-        android:textAlignment="center" />
+        <TextView
+            android:id="@+id/ifo_NFC"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:text="@string/nfcMessage"
+            android:textAlignment="center" />
+
         <TextView
             android:id="@+id/ifo_LTD"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="bottom"
+            android:textColor="@color/colorAccent"
             android:text="@string/nfcLTD"
             android:textAlignment="center" />
 

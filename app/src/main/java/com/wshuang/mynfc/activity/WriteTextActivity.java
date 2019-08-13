@@ -1,6 +1,7 @@
 package com.wshuang.mynfc.activity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -13,12 +14,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wshuang.mynfc.R;
+import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 
 /**
  * Author:Created by WuShuang 2018/10/10.
@@ -29,20 +32,32 @@ public class WriteTextActivity extends BaseNfcActivity {
     private TextView TextViewFlt;
     private String mText = "NFC-CGS";
     private TextView TextViewNo;
+    private TextView Tv_nfcmsg;
+    private TextView editFltDate;
     List<String> CardID = new ArrayList<>();
     private String cardID;
+    private String  FltData;
+    private String FltNr;
+    private String Psw="!@c#$G%^s&*";
 
-    int i=0;
+    int i = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write_text);
-        TextViewNo= findViewById(R.id.textViewNo);
-        TextViewFlt=  findViewById(R.id.textViewFlt);
-        Intent intent=getIntent();
-        mText=intent.getStringExtra("FltNr");
-        TextViewFlt.setText("操作航班为："+mText);
+        TextViewNo = findViewById(R.id.textViewNo);
+        TextViewFlt = findViewById(R.id.textViewFlt);
+        editFltDate = findViewById(R.id.editFltDate);
+        Tv_nfcmsg= findViewById(R.id.tv_nfcmsg);
+        Intent intent = getIntent();
+        FltData = intent.getStringExtra("FltData");
+        FltNr = intent.getStringExtra("FltNr");
+        // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
+        editFltDate.setText("日期：" + FltData);
+        TextViewFlt.setText("航班：" + FltNr+"    ");
+        Log.v("ok", "发卡页面加载成功");
+
 
 
     }
@@ -51,34 +66,47 @@ public class WriteTextActivity extends BaseNfcActivity {
     public void onNewIntent(Intent intent) {
         //新代码
         if (mText == null)
-        return;
+            return;
         byte[] cardid;
         //1.获取Tag对象
         Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
         cardid = detectedTag.getId();
-        cardID=bytesToHexString(cardid);
-        Log.v("ok",cardID);
-          NdefMessage ndefMessage = new NdefMessage(
-                  new NdefRecord[]{createTextRecord(mText)});
+        cardID = bytesToHexString(cardid);
+        Log.v("ok", cardID);
+        mText=FltData+FltNr;
+        mText=AESUtils3.encrypt2(mText,Psw);
+        NdefMessage ndefMessage = new NdefMessage(
+        new NdefRecord[]{createTextRecord(mText)});
 
-        if (CardID.contains(cardID) )
-        {
-            Toast.makeText(this, "这张卡已经发放过", Toast.LENGTH_SHORT).show();
+        if (CardID.contains(cardID)) {
+            Toast.makeText(this, "这张复核牌已经发放过", Toast.LENGTH_SHORT).show();
+            Tv_nfcmsg.setText("重发");
+            Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
 
-        }
-        else{
+        } else {
 
             boolean result = writeTag(ndefMessage, detectedTag);
             if (result) {
-                i=i+1;
+                i = i + 1;
                 TextViewNo.setText(String.format("%d", i));
-                Toast.makeText(this, "写入成功", Toast.LENGTH_SHORT).show();
-             } else {
-                Toast.makeText(this, "写入失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "复核牌发放成功", Toast.LENGTH_SHORT).show();
+                Tv_nfcmsg.setText("成功");
+                Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+
+                //写入数据库
+                Log.v("ok", "准备写入数据库");
+                CardID.add(cardID);
+            } else {
+                Toast.makeText(this, "复核牌发放失败", Toast.LENGTH_SHORT).show();
+                Tv_nfcmsg.setText("失败");
+                Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+
                 Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
-                vibrator.vibrate(1000);
-             }
-            CardID.add(cardID);
+                long pattern[] = {0, 300, 100, 300};
+                vibrator.vibrate(pattern, -1);
+                //vibrator.vibrate(1000);
+            }
+
 
         }
     }
@@ -127,9 +155,13 @@ public class WriteTextActivity extends BaseNfcActivity {
             ndef.writeNdefMessage(ndefMessage);
             return true;
         } catch (Exception e) {
+            Log.v("fail", "writeTag中写卡失败"+e.getMessage());
+            return false;
+
+
         }
-        return false;
-    }
+       }
+
     //字符序列转换为16进制字符串
     private String bytesToHexString(byte[] src) {
         StringBuilder stringBuilder = new StringBuilder("0x");

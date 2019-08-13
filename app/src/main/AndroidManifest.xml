@@ -13,10 +13,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_2"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_2"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -42,7 +43,10 @@
             android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:screenOrientation="portrait" />
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".activity.About_Activity" />
+        <activity android:name=".activity.ReadHistory_Activity" />
+        <activity android:name=".activity.WriteHistory_Activity"></activity>
     </application>
 
 </manifest>
