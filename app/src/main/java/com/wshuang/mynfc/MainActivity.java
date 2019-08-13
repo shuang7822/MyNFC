@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.wshuang.mynfc.activity.About_Activity;
 import com.wshuang.mynfc.activity.ReadHistory_Activity;
@@ -18,6 +17,8 @@ import com.wshuang.mynfc.activity.ReadTextActivity;
 import com.wshuang.mynfc.activity.WriteHistory_Activity;
 import com.wshuang.mynfc.activity.WriteTextActivity;
 import com.wshuang.mynfc.base.BaseNfcActivity;
+
+import org.litepal.tablemanager.Connector;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,7 +39,7 @@ public class MainActivity extends BaseNfcActivity {
     };
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.main,menu);
+       // getMenuInflater().inflate(R.menu.main,menu);
         return true;
     }
 
@@ -46,7 +47,7 @@ public class MainActivity extends BaseNfcActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.PutInHistory:
-                Toast.makeText(this,"收卡", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this,"收卡", Toast.LENGTH_SHORT).show();
                 Intent intent1 = new Intent(this,WriteHistory_Activity.class);
                 Log.v("ok", "加载收卡页面");
 
@@ -54,7 +55,7 @@ public class MainActivity extends BaseNfcActivity {
 
                 break;
             case R.id.PutOutHistory:
-                Toast.makeText(this,"发牌", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this,"发牌", Toast.LENGTH_SHORT).show();
                 Intent intent2 = new Intent(this,ReadHistory_Activity.class);
                 Log.v("ok", "加载发牌页面");
 
@@ -62,7 +63,7 @@ public class MainActivity extends BaseNfcActivity {
 
                 break;
             case R.id.AboutMe:
-                Toast.makeText(this,"关于", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this,"关于", Toast.LENGTH_SHORT).show();
                 Intent intent3 = new Intent(this,About_Activity.class);
                 Log.v("ok", "加载关于页面");
 
@@ -104,7 +105,9 @@ public class MainActivity extends BaseNfcActivity {
 
         }
         Log.v("ok", "主页面加载成功");
-        Log.v("ok", "创建数据库成功！");
+        Connector.getDatabase();
+        Log.v("ok", "数据库创建成功");
+
 
         // NFC适配器，所有的关于NFC的操作从该适配器进行
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
