@@ -3,14 +3,13 @@ package com.wshuang.mynfc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -29,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wshuang.mynfc.activity.MainActivity2;
+import com.wshuang.mynfc.base.AESUtils3;
+import com.wshuang.mynfc.base.BaseNfcActivity;
 import com.wshuang.mynfc.base.CrashHandler;
 
 import java.io.BufferedReader;
@@ -37,10 +38,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import android.content.SharedPreferences;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener, ViewTreeObserver.OnGlobalLayoutListener, TextWatcher {
+public class MainActivity extends BaseNfcActivity implements View.OnClickListener, View.OnFocusChangeListener, ViewTreeObserver.OnGlobalLayoutListener, TextWatcher {
 
     private String TAG = "ifu25";
     private ImageButton mIbNavigationBack;
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String Userid;
     private String pwd;
     private String MyUrl;
+    private String Psw = "!@c#$G%^s&*";
 
 
     //全局Toast
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_login);
-        pref=PreferenceManager.getDefaultSharedPreferences(this);
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
         ANDROID_ID = Settings.System.getString(getContentResolver(), Settings.System.ANDROID_ID);
 
         CrashHandler.getInstance().init(this);//初始化全局异常管理
@@ -85,11 +86,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         login_about3.setText("设备ID:" + ANDROID_ID);
 
         //记住密码功能
-        boolean isRemember=pref.getBoolean("remember_password",false);
-        if (isRemember){
-            String Account=pref.getString("account","");
-            String Password=pref.getString("password","");
+        boolean isRemember = pref.getBoolean("remember_password", false);
+        if (isRemember) {
+            String Account = pref.getString("account", "");
+            String Password = pref.getString("password", "");
             mEtLoginUsername.setText(Account);
+            Password = AESUtils3.decrypt2(Password, Psw);
             mEtLoginPwd.setText(Password);
             rememberpass.setChecked(true);
 
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mIvLoginPwdDel = findViewById(R.id.iv_login_pwd_del);
         login_about3 = findViewById(R.id.tv_login_about3);
         Login_result = findViewById(R.id.login_result);
-        rememberpass=findViewById(R.id.remember_pass);
+        rememberpass = findViewById(R.id.remember_pass);
         //提交、注册
         mBtLoginSubmit = findViewById(R.id.bt_login_submit);
         //  mBtLoginRegister = findViewById(R.id.bt_login_register);
@@ -150,6 +152,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mEtLoginPwd.setOnFocusChangeListener(this);
         mEtLoginPwd.addTextChangedListener(this);
         Log.v("ok", "登录页面加载成功");
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        Toast.makeText(this, "请登录后再操作", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -181,17 +188,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //登录
                 Userid = mEtLoginUsername.getText().toString().trim();
                 pwd = mEtLoginPwd.getText().toString().trim();
-                if (Userid.length()<6 || pwd.length()<6 )
-                {
+                if (Userid.length() < 6 || pwd.length() < 6) {
                     Login_result.setText("输入的帐号密码太短");
                     Login_result.setTextColor(Color.parseColor("#ff0000"));
                     break;
                 }
+                pwd = AESUtils3.encrypt2(pwd, Psw);
 
                 Log.v("ok", ANDROID_ID);
                 Log.v("ok", Userid);
                 Log.v("ok", pwd);
-                MyUrl = "http://95539.cc:82/account/cgs?LogString=" + Userid + "," + pwd + "," + ANDROID_ID;
+                MyUrl = "http://nfc.bjcgs.com:82/account/cgs?LogStr=" + Userid + "," + pwd + "," + ANDROID_ID;
                 Log.v("ok", MyUrl);
                 sendRequestWithHttpURLConnection();
                 break;
@@ -231,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.v("ok", response + "返回-------");
 
                 //去掉前后的双引号
-               String response2 = response.substring(1, response.length() - 1);
+                String response2 = response.substring(1, response.length() - 1);
                 Log.v("ok", response2);
                 if (response2.contains(",")) {
                     String[] result2 = response2.split(",");
@@ -239,8 +246,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     restitch = response2;
                 }
-
                 switch (restitch) {
+                    case "tooshort":
+                        Login_result.setText("用户名密码不合格");
+                        Login_result.setTextColor(Color.parseColor("#ff0000"));
+                        //返回
+                        break;
+                    case "notthree":
+                        Login_result.setText("用户名密码不合格2");
+                        Login_result.setTextColor(Color.parseColor("#ff0000"));
+                        //返回
+                        break;
                     case "devicelosttime":
                         Login_result.setText("此设备超过有效期");
                         Login_result.setTextColor(Color.parseColor("#ff0000"));
@@ -250,35 +266,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case "invaliddevice":
                         Login_result.setText("此设备被禁用");
                         Login_result.setTextColor(Color.parseColor("#ff0000"));
-
                         //返回
                         break;
                     case "notthisdevice":
+                        Login_result.setText("此设备没登记");
+                        Login_result.setTextColor(Color.parseColor("#ff0000"));
                         break;
                     case "logerror":
-                        editor=pref.edit();
+                        editor = pref.edit();
                         editor.clear();
                         editor.apply();
                         Login_result.setText("帐号没找到或密码错误");
                         Login_result.setTextColor(Color.parseColor("#ff0000"));
                         break;
-
                     case "logfirst":
                         //
                         String[] result3 = response2.split(",");
-                        editor=pref.edit();
-                        if (rememberpass.isChecked())
-                        {
-                            editor.putBoolean("remember_password",true);
-                            editor.putBoolean("first_login",true);
-                            editor.putString("account",mEtLoginUsername.getText().toString().trim());
-                            editor.putString("password",mEtLoginPwd.getText().toString().trim());
-                            editor.putString("UserName",result3[1]);//保存用户姓名
+                        editor = pref.edit();
+                        if (rememberpass.isChecked()) {
+                            editor.putBoolean("remember_password", true);
+                            editor.putBoolean("first_login", true);
+                            editor.putString("account", mEtLoginUsername.getText().toString().trim());
+                            editor.putString("password", pwd);
+                            editor.putString("UserName", result3[1]);//保存用户姓名
                             editor.putString("Station", result3[2]);//保存用户场站
+                        } else {
+                            editor.clear();
                         }
-                        else{editor.clear();}
                         editor.apply();
-
                         //成功
                         Intent intent2 = new Intent();
                         intent2.putExtra("UserName", result3[1]);//设置航班日期
@@ -286,24 +301,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         intent2.setClass(MainActivity.this, MainActivity2.class);//从哪里跳到哪里
                         startActivity(intent2);
                         break;
-
                     case "logok":
                         //
-                        editor=pref.edit();
+                        editor = pref.edit();
                         String[] result4 = response2.split(",");
-                        editor=pref.edit();
-                        if (rememberpass.isChecked())
-                        {
-                            editor.putBoolean("remember_password",true);
-                            editor.putBoolean("first_login",false);
-                            editor.putString("account",mEtLoginUsername.getText().toString().trim());
-                            editor.putString("password",mEtLoginPwd.getText().toString().trim());
-                            editor.putString("UserName",result4[1]);//保存用户姓名
+                        editor = pref.edit();
+                        if (rememberpass.isChecked()) {
+                            editor.putBoolean("remember_password", true);
+                            editor.putBoolean("first_login", false);
+                            editor.putString("account", mEtLoginUsername.getText().toString().trim());
+                            editor.putString("password", pwd);
+                            editor.putString("UserName", result4[1]);//保存用户姓名
                             editor.putString("Station", result4[2]);//保存用户场站
+                        } else {
+                            editor.clear();
                         }
-                        else{editor.clear();}
                         editor.apply();
-
                         //成功
                         Intent intent3 = new Intent();
                         intent3.putExtra("UserName", result4[1]);//设置航班日期
@@ -346,8 +359,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     String line;
                     while ((line = reader.readLine()) != null) {
-                    Log.v("ok", "4");
-                    response.append(line);
+                        Log.v("ok", "4");
+                        response.append(line);
                     }
                     Log.v("ok", response.toString());
                     Log.v("ok", "取到值");
@@ -356,8 +369,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                 } catch (Exception e) {
-                    Login_result.setText("登录失败-异常1");
-                     Login_result.setTextColor(Color.parseColor("#ff0000"));
+                    Login_result.setText("网络异常");
+                    Login_result.setTextColor(Color.parseColor("#ff0000"));
                     Log.v("ok", e.toString());
 
                     e.printStackTrace();
@@ -366,8 +379,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         try {
                             reader.close();
                         } catch (IOException e) {
-                             Login_result.setText("登录失败-异常2");
-                             Login_result.setTextColor(Color.parseColor("#ff0000"));
+                            Login_result.setText("登录失败-异常");
+                            Login_result.setTextColor(Color.parseColor("#ff0000"));
                             Log.v("ok", e.toString());
                             e.printStackTrace();
                         }
@@ -574,11 +587,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //登录按钮是否可用
         if (!TextUtils.isEmpty(pwd) && !TextUtils.isEmpty(username)) {
             mBtLoginSubmit.setBackgroundResource(R.drawable.bg_login_submit);
-            mBtLoginSubmit.setTextColor(getResources().getColor(R.color.white,getTheme()));
+            mBtLoginSubmit.setTextColor(getResources().getColor(R.color.white, getTheme()));
 
         } else {
             mBtLoginSubmit.setBackgroundResource(R.drawable.bg_login_submit_lock);
-            mBtLoginSubmit.setTextColor(getResources().getColor(R.color.account_lock_font_color,getTheme()));
+            mBtLoginSubmit.setTextColor(getResources().getColor(R.color.account_lock_font_color, getTheme()));
         }
     }
 

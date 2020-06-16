@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/PutOutHistory"
-        android:title="发牌历史"/>
+        android:title="发牌历史" />
 
     <item
         android:id="@+id/PutInHistory"
-        android:title="复核历史"/>
+        android:title="复核历史" />
     <item
-        android:id="@+id/AboutMe"
-        android:title="关于"/>
+        android:id="@+id/ModifyPass"
+        android:title="修改密码" />
 
 </menu>

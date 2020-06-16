@@ -26,7 +26,6 @@ import com.wshuang.mynfc.base.SoundUtils;
 
 import org.litepal.crud.DataSupport;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -49,12 +48,11 @@ public class ReadTextActivity extends BaseNfcActivity {
     List<String> CardID = new ArrayList<>();
     private String cardID;
     int i = 0;
-    private String  FltData;
+    private String FltData;
     private String FltNr;
-    private String Psw="!@c#$G%^s&*";
-    private String Psw2="422625";
+    private String Psw = "!@c#$G%^s&*";
+    private String Psw2 = "422625";
     private SoundUtils mySound;
-
 
 
     @Override
@@ -64,13 +62,13 @@ public class ReadTextActivity extends BaseNfcActivity {
         TextViewNo = findViewById(R.id.textViewNo);
         TextViewFlt = findViewById(R.id.textViewFlt);
         editFltDate = findViewById(R.id.editFltDate);
-        Tv_nfcmsg= findViewById(R.id.tv_nfcmsg);
+        Tv_nfcmsg = findViewById(R.id.tv_nfcmsg);
         Intent intent = getIntent();
         FltData = intent.getStringExtra("FltData");
         FltNr = intent.getStringExtra("FltNr");
         // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
         editFltDate.setText("日期：" + FltData);
-        TextViewFlt.setText("航班：" + FltNr+"    ");
+        TextViewFlt.setText("航班：" + FltNr + "    ");
         Log.v("ok", "收卡页面加载成功");
 
         String mysql = "select CardID from Cards where FltNr='" + FltNr + "' AND  Date='" + FltData + "' AND operate='S'";
@@ -100,8 +98,6 @@ public class ReadTextActivity extends BaseNfcActivity {
         mySound.putSound(6, R.raw.shibai);
 
 
-
-
     }
 
     @Override
@@ -127,7 +123,6 @@ public class ReadTextActivity extends BaseNfcActivity {
             mySound.playSound(2, 0);
 
 
-
             // mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
 
@@ -140,7 +135,7 @@ public class ReadTextActivity extends BaseNfcActivity {
             //Toast.makeText(this, "读取成功", Toast.LENGTH_SHORT).show();
             // mTagText = mTagText.toUpperCase()+ndef.getType() + " 最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
-           // mNfcText.setText(mTagText);
+            // mNfcText.setText(mTagText);
         }
 
 
@@ -160,7 +155,7 @@ public class ReadTextActivity extends BaseNfcActivity {
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
             NdefMessage msgs[] = null;
-            Log.v("ok", "消息长度："+rawMsgs.toString());
+            Log.v("ok", "消息长度：" + rawMsgs.toString());
             int contentSize = 0;
             if (rawMsgs != null) {
                 msgs = new NdefMessage[rawMsgs.length];
@@ -190,13 +185,13 @@ public class ReadTextActivity extends BaseNfcActivity {
                     String textRecord = parseTextRecord(record);
                     Log.v("ok", "密码对比");
 
-                    Log.v("ok", "原始"+textRecord);
+                    Log.v("ok", "原始" + textRecord);
                     mTagText += textRecord + "\n字符长度：" + contentSize + " bytes";
-                    mText=FltData+FltNr;
-                    Log.v("ok", "文本"+mText);
+                    mText = FltData + FltNr;
+                    Log.v("ok", "文本" + mText);
 
-                    mText=AESUtils3.encrypt2(mText,Psw);
-                    Log.v("ok", "对比"+mText);
+                    mText = AESUtils3.encrypt2(mText, Psw);
+                    Log.v("ok", "对比" + mText);
                     if (textRecord.equals(mText)) {
                         i = i + 1;
                         TextViewNo.setText(String.format("%d", i));
@@ -251,7 +246,6 @@ public class ReadTextActivity extends BaseNfcActivity {
                     mySound.playSound(4, 0);
 
 
-
                     //声明一个振动器对象
                     Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
                     long pattern[] = {0, 300, 100, 300};
@@ -266,10 +260,8 @@ public class ReadTextActivity extends BaseNfcActivity {
                 mySound.playSound(3, 0);
 
 
-
-
             }
-        }else{
+        } else {
             Toast.makeText(this, "不是正确的复核牌", Toast.LENGTH_SHORT).show();
             Tv_nfcmsg.setText("错牌");
             Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));

@@ -4,4 +4,12 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="font_12">12.0dip</dimen>
+    <dimen name="font_16">16.0dip</dimen>
+    <dimen name="font_18">18.0dip</dimen>
+    <dimen name="font_22">22.0dip</dimen>
+    <dimen name="font_26">26.0dip</dimen>
+
+    <dimen name="lay_12">12.0dip</dimen>
+    <dimen name="lay_16">16.0dip</dimen>
 </resources>

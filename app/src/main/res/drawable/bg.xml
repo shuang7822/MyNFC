@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/white" />
+        </shape>
+    </item>
+    <item
+        android:width="176dp"
+        android:height="125dp"
+        android:left="1dip"
+        android:top="1dip">
+        <bitmap
+            android:gravity="center_horizontal|top"
+            android:src="@drawable/nfc_read"
+            android:tileMode="disabled" />
+    </item>
+</layer-list>

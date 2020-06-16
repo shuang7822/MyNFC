@@ -12,9 +12,9 @@
     <LinearLayout
         android:id="@+id/ll_login_username"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="42dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="12dp"
         android:layout_marginRight="24dp"
         android:background="@drawable/bg_login_input_ok"
         android:gravity="center_vertical"
@@ -71,9 +71,9 @@
     <LinearLayout
         android:id="@+id/ll_old_pwd"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="42dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="12dp"
         android:layout_marginRight="24dp"
         android:background="@drawable/bg_login_input_ok"
         android:gravity="center_vertical"
@@ -102,9 +102,10 @@
             android:layout_weight="1"
             android:background="@null"
             android:hint="@string/reset_old_pwd"
+            android:inputType="textPassword"
             android:maxLines="1"
             android:minLines="1"
-            android:inputType="textPassword"
+            android:maxLength="15"
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
             android:textColor="@color/white"
@@ -123,12 +124,13 @@
             app:srcCompat="@mipmap/ic_clear"
             tools:ignore="RtlHardcoded" />
     </LinearLayout>
+
     <LinearLayout
         android:id="@+id/ll_reset_pwd"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="42dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="12dp"
         android:layout_marginRight="24dp"
         android:background="@drawable/bg_login_input_ok"
         android:gravity="center_vertical"
@@ -160,6 +162,7 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:minLines="1"
+            android:maxLength="15"
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
             android:textColor="@color/white"
@@ -180,13 +183,12 @@
     </LinearLayout>
 
 
-
     <LinearLayout
         android:id="@+id/ll_reset_pwd2"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="42dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="12dp"
         android:layout_marginRight="24dp"
         android:background="@drawable/bg_login_input_ok"
         android:gravity="center_vertical"
@@ -218,6 +220,7 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:minLines="1"
+            android:maxLength="15"
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
             android:textColor="@color/white"
@@ -241,16 +244,29 @@
         android:id="@+id/bt_reset_submit"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:layout_marginLeft="24dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginRight="24dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="60dp"
         android:background="@drawable/bg_login_submit_lock"
         android:elevation="0dp"
+        android:onClick="clickChange"
         android:outlineProvider="none"
         android:text="@string/reset_pwd_submit"
         android:textColor="@color/white"
         android:textSize="@dimen/font_22"
         android:translationZ="0dp"
         tools:targetApi="lollipop" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="24dp"
+        android:text="@null"
+        android:textAlignment="center"
+        android:textColor="@color/red_text"
+        android:textSize="@dimen/font_22" />
 
 </LinearLayout>

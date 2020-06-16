@@ -1,6 +1,7 @@
 package com.wshuang.mynfc.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -16,9 +17,14 @@ import android.widget.Toast;
 import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
+import com.wshuang.mynfc.base.Cards;
+import com.wshuang.mynfc.base.SoundUtils;
+
+import org.litepal.crud.DataSupport;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,9 +42,11 @@ public class WriteTextActivity extends BaseNfcActivity {
     private TextView editFltDate;
     List<String> CardID = new ArrayList<>();
     private String cardID;
-    private String  FltData;
+    private String FltData;
     private String FltNr;
-    private String Psw="!@c#$G%^s&*";
+    private String Psw = "!@c#$G%^s&*";
+    private SoundUtils mysound;
+
 
     int i = 0;
 
@@ -49,15 +57,46 @@ public class WriteTextActivity extends BaseNfcActivity {
         TextViewNo = findViewById(R.id.textViewNo);
         TextViewFlt = findViewById(R.id.textViewFlt);
         editFltDate = findViewById(R.id.editFltDate);
-        Tv_nfcmsg= findViewById(R.id.tv_nfcmsg);
+        Tv_nfcmsg = findViewById(R.id.tv_nfcmsg);
         Intent intent = getIntent();
         FltData = intent.getStringExtra("FltData");
         FltNr = intent.getStringExtra("FltNr");
         // mText=mText.substring(0,4)+"年"+mText.substring(4,6)+"月"+mText.substring(6,8 )+"日  "+mText.substring(9,mText.length());
         editFltDate.setText("日期：" + FltData);
-        TextViewFlt.setText("航班：" + FltNr+"    ");
+        TextViewFlt.setText("航班：" + FltNr + "    ");
         Log.v("ok", "发卡页面加载成功");
 
+        //获取已经发放的数量
+        String mysql = "select CardID from Cards where FltNr='" + FltNr + "' AND  Date='" + FltData + "' AND operate='F'";
+        Log.v("OK", mysql);
+
+        Cursor cardss = DataSupport.findBySQL(mysql);
+        Log.v("OK", "库中数据收量" + String.valueOf(cardss.getCount()));
+        i = cardss.getCount();
+        TextViewNo.setText(String.format("%d", i));
+        mText = FltData + FltNr;
+        Log.v("ok", mText);
+
+        mText = AESUtils3.encrypt2(mText, Psw);
+
+        if (cardss != null && cardss.moveToFirst()) {
+
+            do {
+                Log.v("ok", "CARDS ID：" + cardss.getString(0));
+                CardID.add(cardss.getString(0));
+
+            } while (cardss.moveToNext());
+
+
+        }
+        mysound = new SoundUtils(this, 3);
+        mysound.putSound(0, R.raw.errorpassenger);
+        mysound.putSound(1, R.raw.chongfa);
+        mysound.putSound(2, R.raw.chongshou);
+        mysound.putSound(3, R.raw.chongshi);
+        mysound.putSound(4, R.raw.cuowuka);
+        mysound.putSound(5, R.raw.kongfuhe);
+        mysound.putSound(6, R.raw.shibai);
 
 
     }
@@ -67,21 +106,22 @@ public class WriteTextActivity extends BaseNfcActivity {
         //新代码
         if (mText == null)
             return;
-        byte[] cardid;
+
         //1.获取Tag对象
         Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        cardid = detectedTag.getId();
+        byte[] cardid = detectedTag.getId();
         cardID = bytesToHexString(cardid);
         Log.v("ok", cardID);
-        mText=FltData+FltNr;
-        mText=AESUtils3.encrypt2(mText,Psw);
+        Log.v("ok", mText);
+
         NdefMessage ndefMessage = new NdefMessage(
-        new NdefRecord[]{createTextRecord(mText)});
+                new NdefRecord[]{createTextRecord(mText)});
 
         if (CardID.contains(cardID)) {
             Toast.makeText(this, "这张复核牌已经发放过", Toast.LENGTH_SHORT).show();
             Tv_nfcmsg.setText("重发");
             Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+            mysound.playSound(1, 0);
 
         } else {
 
@@ -94,20 +134,29 @@ public class WriteTextActivity extends BaseNfcActivity {
                 Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
 
                 //写入数据库
-                Log.v("ok", "准备写入数据库");
+                Cards cards = new Cards();
+                cards.setCardID(cardID);
+                cards.setDate(FltData);
+                cards.setFltNr(FltNr);
+                cards.setOperationtime(Calendar.getInstance().getTime());
+                cards.setUserID("707091");
+                cards.setOperate("F");
+                cards.save();
+
+                Log.v("ok", "写入数据库");
                 CardID.add(cardID);
             } else {
                 Toast.makeText(this, "复核牌发放失败", Toast.LENGTH_SHORT).show();
                 Tv_nfcmsg.setText("失败");
                 Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                mysound.playSound(6, 0);
 
-                Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+
+                Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
                 long pattern[] = {0, 300, 100, 300};
                 vibrator.vibrate(pattern, -1);
                 //vibrator.vibrate(1000);
             }
-
-
         }
     }
 
@@ -155,12 +204,10 @@ public class WriteTextActivity extends BaseNfcActivity {
             ndef.writeNdefMessage(ndefMessage);
             return true;
         } catch (Exception e) {
-            Log.v("fail", "writeTag中写卡失败"+e.getMessage());
+            Log.v("fail", "writeTag中写卡失败" + e.getMessage());
             return false;
-
-
         }
-       }
+    }
 
     //字符序列转换为16进制字符串
     private String bytesToHexString(byte[] src) {

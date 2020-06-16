@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <litepal>
-    <dbname value="MyNfcData" ></dbname>
+    <dbname value="MyNfcData" />
 
-    <version value="1" ></version>
+    <version value="2" />
 
     <list>
-        <mapping class="com.wshuang.mynfc.base.Cards"></mapping>
-        <mapping class="com.wshuang.mynfc.base.Uers"></mapping>
+        <mapping class="com.wshuang.mynfc.base.Cards" />
+        <mapping class="com.wshuang.mynfc.base.Users" />
     </list>
 </litepal>

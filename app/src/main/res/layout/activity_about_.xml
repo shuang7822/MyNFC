@@ -32,6 +32,7 @@
         android:layout_weight="1"
         android:layout_centerHorizontal="true"
         android:text="信息管理办公室研发" />
+
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
@@ -42,7 +43,8 @@
         android:textSize="18sp"
         android:layout_weight="1"
         android:layout_centerHorizontal="true"
-        android:text=" 版本号 V1.4 \u00a9 2019" />
+        android:text=" 版本号 V1.6 \u00a9 2019" />
+
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"

@@ -1,4 +1,5 @@
 package com.wshuang.mynfc.base;
+
 import org.litepal.crud.DataSupport;
 
 import java.time.LocalDateTime;

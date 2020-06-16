@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MyNFC.iml" filepath="$PROJECT_DIR$/MyNFC.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ntag21xseries/ntag21xseries.iml" filepath="$PROJECT_DIR$/ntag21xseries/ntag21xseries.iml" />
     </modules>
   </component>
 </project>

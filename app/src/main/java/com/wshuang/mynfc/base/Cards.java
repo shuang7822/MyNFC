@@ -1,7 +1,8 @@
 package com.wshuang.mynfc.base;
+
 import org.litepal.crud.DataSupport;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public class Cards extends DataSupport {
 
@@ -47,11 +48,17 @@ public class Cards extends DataSupport {
         UserID = userID;
     }
 
-    public LocalDateTime getOperationtime() {
+    private Date operationtime;
+    private String CardID;
+    private String Date;
+    private String FltNr;
+    private String UserID;
+
+    public Date getOperationtime() {
         return operationtime;
     }
 
-    public void setOperationtime(LocalDateTime operationtime) {
+    public void setOperationtime(Date operationtime) {
         this.operationtime = operationtime;
     }
 
@@ -63,16 +70,7 @@ public class Cards extends DataSupport {
         this.operate = operate;
     }
 
-    private String CardID;
-
-    private String Date;
-
-    private String FltNr;
-
-    private String UserID;
-
-    private LocalDateTime operationtime;
-
     private String operate;
+
 
 }
