@@ -1,7 +1,11 @@
 package com.wshuang.mynfc.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -17,9 +21,15 @@ import android.widget.Toast;
 import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
+import com.wshuang.mynfc.base.Cards;
+import com.wshuang.mynfc.base.SoundUtils;
+
+import org.litepal.crud.DataSupport;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -42,6 +52,8 @@ public class ReadTextActivity extends BaseNfcActivity {
     private String  FltData;
     private String FltNr;
     private String Psw="!@c#$G%^s&*";
+    private String Psw2="422625";
+    private SoundUtils mySound;
 
 
 
@@ -61,11 +73,40 @@ public class ReadTextActivity extends BaseNfcActivity {
         TextViewFlt.setText("航班：" + FltNr+"    ");
         Log.v("ok", "收卡页面加载成功");
 
+        String mysql = "select CardID from Cards where FltNr='" + FltNr + "' AND  Date='" + FltData + "' AND operate='S'";
+        Log.v("OK", mysql);
+
+        Cursor cardss = DataSupport.findBySQL(mysql);
+        Log.v("OK", "库中数据发量" + String.valueOf(cardss.getCount()));
+        i = cardss.getCount();
+        TextViewNo.setText(String.format("%d", i));
+        if (cardss != null && cardss.moveToFirst()) {
+
+            do {
+                Log.v("ok", "CARDS ID：" + cardss.getString(0));
+                CardID.add(cardss.getString(0));
+
+            } while (cardss.moveToNext());
+
+
+        }
+        mySound = new SoundUtils(this, 3);
+        mySound.putSound(0, R.raw.errorpassenger);
+        mySound.putSound(1, R.raw.chongfa);
+        mySound.putSound(2, R.raw.chongshou);
+        mySound.putSound(3, R.raw.chongshi);
+        mySound.putSound(4, R.raw.cuowuka);
+        mySound.putSound(5, R.raw.kongfuhe);
+        mySound.putSound(6, R.raw.shibai);
+
+
+
 
     }
 
     @Override
     public void onNewIntent(Intent intent) {
+
         byte[] cardid = null;
         //1.获取Tag对象
         Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
@@ -83,6 +124,9 @@ public class ReadTextActivity extends BaseNfcActivity {
             Toast.makeText(this, "这复核牌已经回收过", Toast.LENGTH_SHORT).show();
             Tv_nfcmsg.setText("重收");
             Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+            mySound.playSound(2, 0);
+
+
 
             // mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
 
@@ -99,7 +143,8 @@ public class ReadTextActivity extends BaseNfcActivity {
            // mNfcText.setText(mTagText);
         }
 
-      //  mNfcText.setText(mTagText);
+
+        //  mNfcText.setText(mTagText);
 
 
     }
@@ -108,6 +153,9 @@ public class ReadTextActivity extends BaseNfcActivity {
      * 读取NFC标签文本数据
      */
     private void readNfcTag(Intent intent) {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                     NfcAdapter.EXTRA_NDEF_MESSAGES);
@@ -125,9 +173,11 @@ public class ReadTextActivity extends BaseNfcActivity {
                 Toast.makeText(this, "这是张空复核牌", Toast.LENGTH_SHORT).show();
                 Tv_nfcmsg.setText("空卡");
                 Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                mySound.playSound(5, 0);
+
 
                 //声明一个振动器对象
-                Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
                 long pattern[] = {0, 300, 100, 300};
                 vibrator.vibrate(pattern, -1);
                 //vibrator.vibrate(1000);
@@ -153,26 +203,57 @@ public class ReadTextActivity extends BaseNfcActivity {
                         Tv_nfcmsg.setText("成功");
                         Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
 
+                        //写入数据库
+                        Cards cards = new Cards();
+                        cards.setCardID(cardID);
+                        cards.setDate(FltData);
+                        cards.setFltNr(FltNr);
+                        cards.setOperationtime(Calendar.getInstance().getTime());
+                        cards.setUserID("707091");
+                        cards.setOperate("S");
+                        cards.save();
+
+
                         CardID.add(cardID);
                     } else {
-                        Toast.makeText(this, "不是本航班的复核牌", Toast.LENGTH_SHORT).show();
-                        Tv_nfcmsg.setText("非本航牌");
-                        Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                        try {
+                            String fltnr = AESUtils3.decrypt2(textRecord, Psw);
+                            String fltnr2 = fltnr.substring(0, 8) + "  " + fltnr.substring(8);
+
+                            Toast.makeText(this, "不是本航班的复核牌\n" + fltnr2, Toast.LENGTH_LONG).show();
+                            Tv_nfcmsg.setText("非本航牌");
+                            Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                            mySound.playSound(0, 0);
+
+
+                        } catch (Exception e) {
+                            Toast.makeText(this, "不是正确的卡", Toast.LENGTH_SHORT).show();
+                            Tv_nfcmsg.setText("错牌");
+                            Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                            mySound.playSound(4, 0);
+
+
+                        }
+
 
                         //声明一个振动器对象
-                        Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                        Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
                         long pattern[] = {0, 300, 100, 300};
                         vibrator.vibrate(pattern, -1);
                         //vibrator.vibrate(1000);
+
 
                     }
                 } else {
                     Toast.makeText(this, "消息为空", Toast.LENGTH_SHORT).show();
                     Tv_nfcmsg.setText("错牌");
                     Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                    mySound.playSound(4, 0);
+
+
 
                     //声明一个振动器对象
-                    Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+                    Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
                     long pattern[] = {0, 300, 100, 300};
                     vibrator.vibrate(pattern, -1);
                     //vibrator.vibrate(1000);
@@ -182,6 +263,9 @@ public class ReadTextActivity extends BaseNfcActivity {
                 Toast.makeText(this, "读取失败，请重试", Toast.LENGTH_SHORT).show();
                 Tv_nfcmsg.setText("重试");
                 Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                mySound.playSound(3, 0);
+
+
 
 
             }
@@ -189,11 +273,14 @@ public class ReadTextActivity extends BaseNfcActivity {
             Toast.makeText(this, "不是正确的复核牌", Toast.LENGTH_SHORT).show();
             Tv_nfcmsg.setText("错牌");
             Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+            mySound.playSound(4, 0);
+
+
             Log.v("ok", "错误的卡");
 
 
             //声明一个振动器对象
-            Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
+            Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
             long pattern[] = {0, 300, 100, 300};
             vibrator.vibrate(pattern, -1);
             //vibrator.vibrate(1000);
@@ -254,6 +341,27 @@ public class ReadTextActivity extends BaseNfcActivity {
         }
         return stringBuilder.toString();
     }
+/*
+    RingtoneManager mRingtone=new ;
+    boolean allowMusic=true;
+    private synchronized void playSound(Context context,String param)
+    {
+        if (!allowMusic) {
+            return;
+        }
+        if (mRingtone == null) {
+            Log.v("ok", "----------初始化铃声----------");
+            String uri = "android.resource://" + context.getPackageName() + "/" + R.raw.order_remind;
+            Uri no = Uri.parse(uri);
+            mRingtone = RingtoneManager.getRingtone(context.getApplicationContext(), no);
+        }
+        if (!mRingtone.isPlaying()) {
+            Log.v("ok", "--------------播放铃声---------------" + mRingtone.isPlaying());
+            mRingtone.play();
+        }
 
+
+    }
+*/
 
 }
