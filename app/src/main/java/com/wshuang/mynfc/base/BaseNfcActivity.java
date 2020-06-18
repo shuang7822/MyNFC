@@ -2,6 +2,7 @@ package com.wshuang.mynfc.base;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.support.v7.app.AppCompatActivity;
 
@@ -37,9 +38,21 @@ public class BaseNfcActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+
+        IntentFilter tagDetected = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+        IntentFilter ndefDetected = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        IntentFilter techDetected = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+        IntentFilter[] nfcIntentFilter = new IntentFilter[]{techDetected,tagDetected,ndefDetected};
+
+        mPendingIntent = PendingIntent.getActivity(
+                this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
         //设置处理优于所有其他NFC的处理
-        if (mNfcAdapter != null)
-            mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
+
+        if(mNfcAdapter!= null)
+            mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, nfcIntentFilter, null);
+
+      /*  if (mNfcAdapter != null)
+            mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);*/
     }
 
     /**

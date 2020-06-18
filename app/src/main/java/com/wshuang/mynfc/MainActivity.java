@@ -31,6 +31,10 @@ import com.wshuang.mynfc.activity.MainActivity2;
 import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
 import com.wshuang.mynfc.base.CrashHandler;
+import com.bjcgs.ntag21xseries.NTag213;
+import com.bjcgs.ntag21xseries.NTag21x;
+import com.bjcgs.ntag21xseries.NTagEventListener;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
