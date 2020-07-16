@@ -220,15 +220,14 @@ public class NTag21x {
     /**
      * Writes full message from start page
      * It formats the tag first
-     *
-     * @param pages         message to write in bytes
+     *  @param pages         message to write in bytes
      * @param eventListener @see {@link NTagEventListener}
      */
-    public void write(byte[] pages, NTagEventListener eventListener) {
+    public String write(byte[] pages, NTagEventListener eventListener) {
         if (pages.length / 4 > PAGE_USER_END - PAGE_USER_START + 1) {
             eventListener.OnError(NTagEventListener.ERROR_MAX_CAPACITY_MSG,
                     NTagEventListener.ERROR_MAX_CAPACITY);
-            return;
+            return null;
         }
         formatMemory(eventListener);
         int len = pages.length;
@@ -252,6 +251,7 @@ public class NTag21x {
             currentPage += (byte) 0x01;
         }
         eventListener.OnSuccess(NTagEventListener.ON_WRITE_SUCCESS, NTagEventListener.WRITE);
+        return null;
     }
 
     /**

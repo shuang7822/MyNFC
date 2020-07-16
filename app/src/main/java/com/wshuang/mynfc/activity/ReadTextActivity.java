@@ -10,7 +10,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Vibrator;
@@ -18,6 +17,9 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bjcgs.ntag21xseries.NTag213;
+import com.bjcgs.ntag21xseries.NTag21x;
+import com.bjcgs.ntag21xseries.NTagEventListener;
 import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.AESUtils3;
 import com.wshuang.mynfc.base.BaseNfcActivity;
@@ -101,12 +103,60 @@ public class ReadTextActivity extends BaseNfcActivity {
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
+    public void onNewIntent(final Intent intent) {
 
         byte[] cardid = null;
         //1.获取Tag对象
-        Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        //Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        Tag tag         = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        NTag213 nTag213 = new NTag213(tag);
+        nTag213.connect();
+        //获取TAG UID
+        nTag213.getStaticId(NTag21x.UID_SRTING, new NTagEventListener() {
+            @Override
+            public void OnSuccess(Object response, int code) {
 
+                //tvResult.setText((String) response);
+                cardID=(String) response;
+                Log.v("ok", cardID);
+                if (CardID.contains(cardID)) {
+                    Toast.makeText(getApplicationContext(), "这复核牌已经回收过", Toast.LENGTH_SHORT).show();
+                    Tv_nfcmsg.setText("重收");
+                    Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+                    mySound.playSound(2, 0);
+                    return;
+                    // mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+                }
+            }
+
+            @Override
+            public void OnError(String error, int code) {
+                Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
+                return;
+            }
+        });
+        nTag213.read(new NTagEventListener() {
+            @Override
+            public void OnSuccess(Object response, int code) {
+                byte[] r = (byte[]) response;
+               // tvResult.setText(new String(r));
+                ReadNfc(new String(r));
+            }
+
+            @Override
+            public void OnError(String error, int code) {
+                Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
+
+
+
+
+        nTag213.close();
+
+
+
+/*
         cardid = detectedTag.getId();
         mTagText = "UID:" + bytesToHexString(cardid) + "\n";//获取卡的UID
         Log.v("ok", mTagText);
@@ -140,9 +190,99 @@ public class ReadTextActivity extends BaseNfcActivity {
 
 
         //  mNfcText.setText(mTagText);
-
+*/
 
     }
+
+    private void ReadNfc(String textRecord) {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+
+            Log.v("ok", "消息长度：" + textRecord.length());
+            int contentSize = 0;
+            if (textRecord.length()<=0) {
+                Toast.makeText(this, "这是张空复核牌", Toast.LENGTH_SHORT).show();
+                Tv_nfcmsg.setText("空卡");
+                Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                mySound.playSound(5, 0);
+
+
+                //声明一个振动器对象
+                Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
+                long pattern[] = {0, 300, 100, 300};
+                vibrator.vibrate(pattern, -1);
+                //vibrator.vibrate(1000);
+                return;
+            }
+            try {
+                    Log.v("ok", "密码对比");
+
+                    Log.v("ok", "原始" + textRecord);
+                    mTagText += textRecord + "\n字符长度：" + contentSize + " bytes";
+                    mText = FltData + FltNr;
+                    Log.v("ok", "文本" + mText);
+
+                    mText = AESUtils3.encrypt2(mText, Psw);
+                    Log.v("ok", "对比" + mText);
+                    if (textRecord.equals(mText)) {
+                        i = i + 1;
+                        TextViewNo.setText(String.format("%d", i));
+                        Tv_nfcmsg.setText("成功");
+                        Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+
+                        //写入数据库
+                        Cards cards = new Cards();
+                        cards.setCardID(cardID);
+                        cards.setDate(FltData);
+                        cards.setFltNr(FltNr);
+                        cards.setOperationtime(Calendar.getInstance().getTime());
+                        cards.setUserID("707091");
+                        cards.setOperate("S");
+                        cards.save();
+
+
+                        CardID.add(cardID);
+                    } else {
+                        try {
+                            String fltnr = AESUtils3.decrypt2(textRecord, Psw);
+                            String fltnr2 = fltnr.substring(0, 8) + "  " + fltnr.substring(8);
+
+                            Toast.makeText(this, "不是本航班的复核牌\n" + fltnr2, Toast.LENGTH_LONG).show();
+                            Tv_nfcmsg.setText("非本航牌");
+                            Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                            mySound.playSound(0, 0);
+
+
+                        } catch (Exception e) {
+                            Toast.makeText(this, "不是正确的卡", Toast.LENGTH_SHORT).show();
+                            Tv_nfcmsg.setText("错牌");
+                            Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                            mySound.playSound(4, 0);
+
+
+                        }
+
+
+                        //声明一个振动器对象
+                        Vibrator vibrator = (Vibrator) this.getSystemService(VIBRATOR_SERVICE);
+                        long pattern[] = {0, 300, 100, 300};
+                        vibrator.vibrate(pattern, -1);
+                        //vibrator.vibrate(1000);
+
+
+                    }
+
+                }
+             catch (Exception e) {
+                Toast.makeText(this, "读取失败，请重试", Toast.LENGTH_SHORT).show();
+                Tv_nfcmsg.setText("重试");
+                Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                mySound.playSound(3, 0);
+
+
+            }
+    }
+
 
     /**
      * 读取NFC标签文本数据

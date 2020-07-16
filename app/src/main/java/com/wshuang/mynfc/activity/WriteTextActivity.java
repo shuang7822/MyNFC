@@ -13,6 +13,9 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.bjcgs.ntag21xseries.NTag213;
+import com.bjcgs.ntag21xseries.NTag21x;
+import com.bjcgs.ntag21xseries.NTagEventListener;
 
 import com.wshuang.mynfc.R;
 import com.wshuang.mynfc.base.AESUtils3;
@@ -106,10 +109,103 @@ public class WriteTextActivity extends BaseNfcActivity {
         //新代码
         if (mText == null)
             return;
+        Log.v("ok", "检测到NFC卡");
 
         //1.获取Tag对象
-        Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        byte[] cardid = detectedTag.getId();
+        //Tag detectedTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        Tag tag         = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        final NTag213 nTag213 = new NTag213(tag);
+        nTag213.connect();
+        Log.v("ok", "nTag213.connect");
+
+
+        //获取TAG UID
+        nTag213.getStaticId(NTag21x.UID_SRTING, new NTagEventListener() {
+            @Override
+            public void OnSuccess(Object response, int code) {
+
+                //tvResult.setText((String) response);
+                cardID=(String) response;
+                Log.v("ok", "当前cardID:"+cardID);
+                if (CardID.contains(cardID)) {
+                    Toast.makeText(getApplicationContext(), "这张复核牌已经发放过", Toast.LENGTH_SHORT).show();
+                    Tv_nfcmsg.setText("重发");
+                    Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+                    mysound.playSound(1, 0);
+                    Log.v("ok", "当前cardID:"+cardID);
+
+                    // mTagText = mTagText.toUpperCase()+ndef.getType() + "\n最大容量:" + ndef.getMaxSize() + "bytes\n\n";
+                }
+                else
+                    {
+                        nTag213.write(mText.getBytes(), new NTagEventListener() {
+                            @Override
+                            public void OnSuccess(Object response, int code) {
+                                Toast.makeText(getApplicationContext(), (String) response, Toast.LENGTH_LONG).show();
+                                i = i + 1;
+                                TextViewNo.setText(String.format("%d", i));
+                                Toast.makeText(getApplicationContext(), "复核牌发放成功", Toast.LENGTH_SHORT).show();
+                                Tv_nfcmsg.setText("成功");
+                                Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+                                Log.v("ok", "复核牌发放成功");
+
+
+                                //写入数据库
+                                Cards cards = new Cards();
+                                cards.setCardID(cardID);
+                                cards.setDate(FltData);
+                                cards.setFltNr(FltNr);
+                                cards.setOperationtime(Calendar.getInstance().getTime());
+                                cards.setUserID("707091");
+                                cards.setOperate("F");
+                                cards.save();
+
+                                Log.v("ok", "写入数据库");
+                                CardID.add(cardID);
+
+                            }
+
+                            @Override
+                            public void OnError(String error, int code) {
+                                Log.v("ok", "写入失败");
+
+                              /*  Toast.makeText(getApplicationContext(), error, Toast.LENGTH_LONG).show();*/
+                                Toast.makeText(getApplicationContext(), "复核牌发放失败", Toast.LENGTH_SHORT).show();
+                                Tv_nfcmsg.setText("失败");
+                                Tv_nfcmsg.setTextColor(Color.parseColor("#ff2222"));
+                                mysound.playSound(6, 0);
+
+
+                                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(VIBRATOR_SERVICE);
+                                long pattern[] = {0, 300, 100, 300};
+                                vibrator.vibrate(pattern, -1);
+                                //vibrator.vibrate(1000);
+                            }
+                        });
+
+
+                    }
+
+            }
+
+            @Override
+            public void OnError(String error, int code) {
+                Log.v("ok", "获取ID错误");
+
+                Toast.makeText(getApplicationContext(), "获取ID错误", Toast.LENGTH_SHORT).show();
+                Tv_nfcmsg.setText("ID错误");
+                Tv_nfcmsg.setTextColor(Color.parseColor("#22ff33"));
+                mysound.playSound(6, 0);
+
+            }
+        });
+
+
+
+
+
+        nTag213.close();
+/*      byte[] cardid = detectedTag.getId();
         cardID = bytesToHexString(cardid);
         Log.v("ok", cardID);
         Log.v("ok", mText);
@@ -157,7 +253,11 @@ public class WriteTextActivity extends BaseNfcActivity {
                 vibrator.vibrate(pattern, -1);
                 //vibrator.vibrate(1000);
             }
-        }
+        }*/
+    }
+
+    private void WriteNfc(String s) {
+
     }
 
     /**
