@@ -10,7 +10,7 @@
         android:id="@+id/textViewRead"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="回收"
+        android:text="收卡"
         android:textSize="16sp"
         tools:layout_editor_absoluteX="138dp"
         tools:layout_editor_absoluteY="121dp" />
